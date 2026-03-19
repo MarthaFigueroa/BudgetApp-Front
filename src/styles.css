@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background-color: #0c0c0e;
+    color: #f4f3ee;
+    font-family: "Syne", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #141416;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2e2e33;
+    border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #7a7a82;
+  }
+
+  /* Number inputs */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  /* Date input calendar icon color */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    cursor: pointer;
+  }
+
+  /* Focus ring */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-[#141416] border border-[#232327] rounded-2xl;
+  }
+
+  .label-xs {
+    @apply font-mono text-[10px] uppercase tracking-[0.12em] text-[#7A7A82];
+  }
+
+  .btn-ghost {
+    @apply text-[#7A7A82] hover:text-[#F4F3EE] transition-colors duration-150;
+  }
+
+  .input-field {
+    @apply w-full bg-[#1C1C1F] border border-[#232327] rounded-xl px-4 py-2.5
+    text-sm font-sans text-[#F4F3EE] placeholder-[#4A4A52]
+    focus:border-[#C9F131] transition-colors duration-150;
+  }
+
+  .input-amount {
+    @apply w-full bg-transparent border-b border-[#232327] py-1
+    text-right font-mono text-[#C9F131] placeholder-[#2E2E33]
+    focus:border-[#C9F131] transition-colors duration-150;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-in {
+    animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .gradient-border {
+    background: linear-gradient(#141416, #141416) padding-box,
+      linear-gradient(135deg, #c9f131 0%, transparent 60%) border-box;
+    border: 1px solid transparent;
+  }
+}
+
+/* Progress bar fill animation */
+.progress-fill {
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* SVG ring transition */
+circle.ring-segment {
+  transition: stroke-dasharray 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    stroke-dashoffset 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}

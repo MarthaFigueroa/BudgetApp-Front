@@ -1,0 +1,179 @@
+<!-- Backdrop -->
+<div
+  class="modal-backdrop fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in"
+  (click)="onBackdropClick($event)"
+>
+  <!-- Panel -->
+  <div
+    class="bg-[#141416] border border-[#232327] rounded-3xl w-full max-w-md animate-slide-up shadow-2xl"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Header -->
+    <div class="flex items-center gap-4 p-6 border-b border-[#1C1C1F]">
+      <div
+        class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl flex-shrink-0"
+        [style.background-color]="category.color + '18'"
+        [style.border]="'1px solid ' + category.color + '40'"
+      >
+        {{ category.icon }}
+      </div>
+      <div class="flex-1 min-w-0">
+        <h2 class="font-sans font-semibold text-[#F4F3EE] text-base leading-tight">
+          Nuevo concepto
+        </h2>
+        <p class="font-mono text-[10px] text-[#7A7A82] uppercase tracking-widest mt-0.5">
+          {{ category.name }}
+        </p>
+      </div>
+      <button
+        (click)="cancel()"
+        class="w-8 h-8 rounded-xl flex items-center justify-center text-[#4A4A52] hover:text-[#F4F3EE] hover:bg-[#1C1C1F] transition-all text-lg leading-none"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="submit()" class="p-6 space-y-5">
+
+      <!-- Nombre del concepto -->
+      <div>
+        <label class="label-xs block mb-2">Concepto</label>
+        <input
+          type="text"
+          [(ngModel)]="name"
+          name="name"
+          placeholder="Ej: Alquiler, Spotify, Agua..."
+          class="input-field"
+          autocomplete="off"
+          autofocus
+        />
+      </div>
+
+      <!-- Importe planificado -->
+      <div>
+        <label class="label-xs block mb-2">{{ amountLabel }}</label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-[#4A4A52] text-sm select-none">€</span>
+          <input
+            type="number"
+            [(ngModel)]="plannedAmount"
+            name="plannedAmount"
+            placeholder="0.00"
+            min="0.01"
+            step="0.01"
+            class="input-field pl-8 text-right font-mono text-[#C9F131]"
+          />
+        </div>
+        @if (monthlyPreview !== null) {
+          <p class="font-mono text-[10px] text-[#C9F131] mt-1.5 flex items-center gap-1">
+            <span class="text-[#4A4A52]">{{ fmtAmount(plannedAmount!) }}</span>
+            <span class="text-[#4A4A52]">×{{ previewOccurrences }}</span>
+            <span class="text-[#4A4A52]">=</span>
+            <span>{{ fmtAmount(monthlyPreview) }}/mes</span>
+          </p>
+        }
+      </div>
+
+      <!-- Fecha + Recurrente -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="label-xs block mb-2">Fecha límite</label>
+          <input
+            type="date"
+            [(ngModel)]="dueDate"
+            name="dueDate"
+            class="input-field text-sm"
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="label-xs block mb-2">Recurrente</label>
+          <div class="flex items-center h-[42px]">
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <!-- Toggle switch -->
+              <div class="relative flex-shrink-0">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="isRecurring"
+                  name="isRecurring"
+                  class="sr-only peer"
+                />
+                <div
+                  class="w-11 h-6 rounded-full bg-[#232327] border border-[#2E2E33]
+                         peer-checked:bg-[#C9F131] peer-checked:border-[#C9F131]
+                         transition-all duration-200"
+                ></div>
+                <div
+                  class="absolute top-1 left-1 w-4 h-4 bg-[#4A4A52] rounded-full
+                         peer-checked:translate-x-5 peer-checked:bg-[#0C0C0E]
+                         transition-all duration-200"
+                ></div>
+              </div>
+              <span class="font-mono text-xs text-[#7A7A82] group-hover:text-[#F4F3EE] transition-colors">
+                Activar
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selector de frecuencia (solo visible si recurrente) -->
+      @if (isRecurring) {
+        <div class="animate-fade-in">
+          <label class="label-xs block mb-2">Frecuencia de repetición</label>
+          <select
+            [(ngModel)]="recurringFrequency"
+            name="recurringFrequency"
+            class="input-field text-sm bg-[#1C1C1F]"
+          >
+            @for (opt of frequencyOptions; track opt.value) {
+              <option [value]="opt.value" class="bg-[#1C1C1F]">{{ opt.label }}</option>
+            }
+          </select>
+          <p class="font-mono text-[10px] text-[#4A4A52] mt-1.5">
+            ↻ {{ selectedFrequencyDesc }}
+          </p>
+        </div>
+      }
+
+      <!-- Notas -->
+      <div>
+        <label class="label-xs block mb-2">Notas <span class="text-[#4A4A52]">(opcional)</span></label>
+        <textarea
+          [(ngModel)]="notes"
+          name="notes"
+          placeholder="Observaciones..."
+          rows="2"
+          class="input-field resize-none text-sm"
+        ></textarea>
+      </div>
+
+      <!-- Acciones -->
+      <div class="flex gap-3 pt-1">
+        <button
+          type="button"
+          (click)="cancel()"
+          class="flex-1 py-3 rounded-xl border border-[#232327] text-[#7A7A82]
+                 text-sm font-sans font-medium
+                 hover:border-[#2E2E33] hover:text-[#F4F3EE] hover:bg-[#1C1C1F]
+                 transition-all duration-150"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          [disabled]="!isValid"
+          class="flex-1 py-3 rounded-xl text-sm font-sans font-semibold
+                 bg-[#C9F131] text-[#0C0C0E]
+                 hover:bg-[#D9F660] active:bg-[#B8D92B]
+                 disabled:opacity-25 disabled:cursor-not-allowed
+                 transition-all duration-150"
+        >
+          Añadir concepto
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
