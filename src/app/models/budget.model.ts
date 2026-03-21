@@ -39,12 +39,17 @@ export interface BudgetCategory {
   items: BudgetItem[];
 }
 
-/** Fuente de ingresos */
+/** Fuente de ingresos del mes.
+ *  isFromTemplate=true  → copiada de una plantilla; se repetirá en futuros meses
+ *  isFromTemplate=false → ingreso puntual (regalo, venta, bonus…); solo este mes */
 export interface IncomeSource {
   id: string;
   name: string;
   amount: number;
-  isRecurring: boolean;
+  isFromTemplate: boolean;
+  templateItemId?: string;
+  /** Frecuencia heredada del ítem de plantilla (solo para display si isFromTemplate=true) */
+  recurringFrequency?: RecurringFrequency;
 }
 
 /** Presupuesto mensual completo */
@@ -54,9 +59,8 @@ export interface MonthlyBudget {
   year: number;
   incomeSources: IncomeSource[];
   categories: BudgetCategory[];
-  /** Si los ingresos fueron aplicados desde una plantilla base, guarda su effectiveFrom.
-   *  undefined = el usuario los configuró manualmente. */
-  baseIncomeTemplate?: { month: number; year: number };
+  /** Plantilla aplicada al crear este presupuesto, si existe. */
+  template?: { id: string; name: string };
   createdAt: string;
   updatedAt: string;
 }

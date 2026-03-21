@@ -61,13 +61,12 @@ export class DashboardComponent {
 
   toggleIncomeExpanded(): void { this.incomeExpanded.update(v => !v); }
 
+  get recurringIncomeSources() { return this.budget().incomeSources.filter((s) => s.isFromTemplate); }
+  get oneTimeIncomeSources()   { return this.budget().incomeSources.filter((s) => !s.isFromTemplate); }
+
   addIncomeSource(): void { this.svc.addIncomeSource(); }
-
-  saveBaseIncome(): void { this.svc.saveBaseIncome(); }
-  clearBaseIncome(): void { this.svc.clearBaseIncome(); }
-  get hasBaseIncome() { return this.svc.hasBaseIncome; }
-
   removeIncomeSource(id: string): void { this.svc.removeIncomeSource(id); }
+  toggleRecurring(id: string): void { this.svc.toggleRecurring(id); }
 
   // ─── Panel: Asignar ingresos sin asignar ────────────────────────────────────
 
