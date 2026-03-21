@@ -5,7 +5,8 @@ import { BudgetService } from '../../services/budget.service';
 import { BudgetRingComponent } from '../budget-ring/budget-ring.component';
 import { CategoryCardComponent } from '../category-card/category-card.component';
 import { AddItemModalComponent } from '../add-item-modal/add-item-modal.component';
-import { BudgetCategory, IncomeSource } from '../../models/budget.model';
+import { IncomeModalComponent } from '../income-modal/income-modal.component';
+import { BudgetCategory } from '../../models/budget.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,6 +17,7 @@ import { BudgetCategory, IncomeSource } from '../../models/budget.model';
     BudgetRingComponent,
     CategoryCardComponent,
     AddItemModalComponent,
+    IncomeModalComponent,
   ],
   templateUrl: './dashboard.component.html',
 })
@@ -24,13 +26,6 @@ export class DashboardComponent {
 
   readonly budget  = this.svc.budget;
   readonly summary = this.svc.summary;
-
-  // Modal state
-  modalOpen        = signal(false);
-  selectedCategory = signal<BudgetCategory | null>(null);
-
-  // Income panel state
-  incomeExpanded = signal(false);
 
   // ─── Nombres de meses en español ────────────────────────────────────────────
   readonly MONTHS = [
@@ -47,26 +42,11 @@ export class DashboardComponent {
   prevMonth(): void { this.svc.navigateMonth(-1); }
   nextMonth(): void { this.svc.navigateMonth(1); }
 
-  // ─── Ingresos ────────────────────────────────────────────────────────────────
+  // ─── Modal: Ingresos ────────────────────────────────────────────────────────
 
-  onIncomeInput(sourceId: string, event: Event): void {
-    const val = parseFloat((event.target as HTMLInputElement).value) || 0;
-    this.svc.setIncome(sourceId, val);
-  }
-
-  onIncomeNameChange(sourceId: string, event: Event): void {
-    const val = (event.target as HTMLInputElement).value;
-    this.svc.updateIncomeName(sourceId, val);
-  }
-
-  toggleIncomeExpanded(): void { this.incomeExpanded.update(v => !v); }
-
-  get recurringIncomeSources() { return this.budget().incomeSources.filter((s) => s.isFromTemplate); }
-  get oneTimeIncomeSources()   { return this.budget().incomeSources.filter((s) => !s.isFromTemplate); }
-
-  addIncomeSource(): void { this.svc.addIncomeSource(); }
-  removeIncomeSource(id: string): void { this.svc.removeIncomeSource(id); }
-  toggleRecurring(id: string): void { this.svc.toggleRecurring(id); }
+  incomePanelOpen = signal(false);
+  openIncomePanel(): void  { this.incomePanelOpen.set(true); }
+  closeIncomePanel(): void { this.incomePanelOpen.set(false); }
 
   // ─── Panel: Asignar ingresos sin asignar ────────────────────────────────────
 
@@ -125,7 +105,10 @@ export class DashboardComponent {
     this.assignConcept.set((event.target as HTMLInputElement).value);
   }
 
-  // ─── Modal ───────────────────────────────────────────────────────────────────
+  // ─── Modal: Añadir concepto ──────────────────────────────────────────────────
+
+  modalOpen        = signal(false);
+  selectedCategory = signal<BudgetCategory | null>(null);
 
   openModal(category: BudgetCategory): void {
     this.selectedCategory.set(category);
@@ -152,7 +135,6 @@ export class DashboardComponent {
     return value.toFixed(1) + '%';
   }
 
-  trackBySourceId(_: number, s: IncomeSource): string { return s.id; }
   trackByCategoryId(_: number, c: { category: BudgetCategory }): string {
     return c.category.id;
   }

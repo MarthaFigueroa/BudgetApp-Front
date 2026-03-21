@@ -131,156 +131,44 @@
         <app-budget-ring />
       </div>
 
-      <!-- ─── Panel de Ingresos ─────────────────────────────────────────── -->
-      <div class="bg-[#141416] border border-[#232327] rounded-2xl overflow-hidden">
-
-        <button
-          class="w-full flex items-center justify-between px-5 py-4
-                 hover:bg-[#1C1C1F] transition-colors"
-          (click)="toggleIncomeExpanded()"
-        >
-          <div class="flex items-center gap-2.5">
-            <div class="w-6 h-6 rounded-lg bg-[#C9F131]/10 border border-[#C9F131]/20
-                        flex items-center justify-center">
-              <svg class="w-3.5 h-3.5 text-[#C9F131]" fill="none" viewBox="0 0 24 24"
-                   stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <span class="font-sans text-sm font-medium text-[#F4F3EE]">Ingresos</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="font-display text-base font-light text-[#C9F131]">
-              {{ fmt(summary().totalIncome) }}
-            </span>
-            <svg
-              class="w-3 h-3 text-[#4A4A52] transition-transform duration-200"
-              [class.rotate-180]="incomeExpanded()"
-              fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+      <!-- ─── Botón de Ingresos → abre modal ──────────────────────────── -->
+      <button
+        class="w-full bg-[#141416] border border-[#232327] rounded-2xl
+               px-5 py-4 flex items-center justify-between
+               hover:bg-[#1C1C1F] hover:border-[#2E2E33] transition-all duration-150"
+        (click)="openIncomePanel()"
+      >
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded-lg bg-[#C9F131]/10 border border-[#C9F131]/20
+                      flex items-center justify-center flex-shrink-0">
+            <svg class="w-3.5 h-3.5 text-[#C9F131]" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-        </button>
-
-        @if (incomeExpanded()) {
-          <div class="border-t border-[#1C1C1F] px-5 py-4 space-y-4">
-
-            <!-- ── Recurrentes ───────────────────────────────────────────── -->
-            @if (recurringIncomeSources.length > 0) {
-              <div>
-                <p class="label-xs mb-2 flex items-center gap-1.5">
-                  <span class="text-[10px]">🔁</span> Recurrentes
-                </p>
-                <div class="space-y-2">
-                  @for (source of recurringIncomeSources; track trackBySourceId($index, source)) {
-                      <div class="space-y-1">
-                        <input
-                          type="text"
-                          [value]="source.name"
-                          (blur)="onIncomeNameChange(source.id, $event)"
-                          class="w-full bg-transparent border-none font-mono text-[10px] text-[#7A7A82]
-                                 uppercase tracking-widest focus:outline-none focus:text-[#F4F3EE]
-                                 transition-colors"
-                        />
-                        <div class="flex items-center gap-1.5">
-                          <span class="font-mono text-xs text-[#4A4A52]">€</span>
-                          <input
-                            type="number"
-                            [value]="source.amount || ''"
-                            (input)="onIncomeInput(source.id, $event)"
-                            placeholder="0"
-                            class="flex-1 bg-[#1C1C1F] border border-[#232327] rounded-lg px-3 py-1.5
-                                   text-right font-mono text-sm text-[#C9F131] placeholder-[#2E2E33]
-                                   focus:border-[#C9F131] focus:outline-none transition-colors"
-                          />
-                          <!-- Toggle 🔁 activo -->
-                          <button
-                            (click)="toggleRecurring(source.id)"
-                            title="Quitar de plantilla (pasar a puntual)"
-                            class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0
-                                   bg-[#C9F131]/10 border border-[#C9F131]/30 text-[#C9F131]
-                                   hover:bg-[#FF7B7B]/10 hover:border-[#FF7B7B]/30 hover:text-[#FF7B7B]
-                                   transition-all duration-150 text-[11px]"
-                          >🔁</button>
-                          @if (budget().incomeSources.length > 1) {
-                            <button
-                              (click)="removeIncomeSource(source.id)"
-                              class="text-[#4A4A52] hover:text-[#FF7B7B] transition-colors text-xs
-                                     w-5 h-5 flex items-center justify-center flex-shrink-0"
-                            >✕</button>
-                          }
-                        </div>
-                      </div>
-                  }
-                </div>
-              </div>
+          <div class="text-left">
+            <span class="font-sans text-sm font-medium text-[#F4F3EE] block leading-tight">
+              Ingresos
+            </span>
+            @if (budget().incomeSources.length > 0) {
+              <span class="font-mono text-[10px] text-[#4A4A52]">
+                {{ budget().incomeSources.length }}
+                {{ budget().incomeSources.length === 1 ? 'fuente' : 'fuentes' }}
+              </span>
             }
-
-            <!-- ── Ingresos de este mes ──────────────────────────────────── -->
-            @if (oneTimeIncomeSources.length > 0) {
-              <div [class.pt-3]="recurringIncomeSources.length > 0"
-                   [class.border-t]="recurringIncomeSources.length > 0"
-                   class="border-[#1C1C1F]">
-                <p class="label-xs mb-2">Ingresos de este mes</p>
-                <div class="space-y-2">
-                  @for (source of oneTimeIncomeSources; track trackBySourceId($index, source)) {
-                      <div class="space-y-1">
-                        <input
-                          type="text"
-                          [value]="source.name"
-                          (blur)="onIncomeNameChange(source.id, $event)"
-                          class="w-full bg-transparent border-none font-mono text-[10px] text-[#7A7A82]
-                                 uppercase tracking-widest focus:outline-none focus:text-[#F4F3EE]
-                                 transition-colors"
-                        />
-                        <div class="flex items-center gap-1.5">
-                          <span class="font-mono text-xs text-[#4A4A52]">€</span>
-                          <input
-                            type="number"
-                            [value]="source.amount || ''"
-                            (input)="onIncomeInput(source.id, $event)"
-                            placeholder="0"
-                            class="flex-1 bg-[#1C1C1F] border border-[#232327] rounded-lg px-3 py-1.5
-                                   text-right font-mono text-sm text-[#C9F131] placeholder-[#2E2E33]
-                                   focus:border-[#C9F131] focus:outline-none transition-colors"
-                          />
-                          <!-- Toggle 🔁 inactivo: marcar como recurrente -->
-                          <button
-                            (click)="toggleRecurring(source.id)"
-                            title="Marcar como recurrente (se heredará a futuros meses)"
-                            class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0
-                                   border border-[#232327] text-[#4A4A52]
-                                   hover:bg-[#C9F131]/10 hover:border-[#C9F131]/30 hover:text-[#C9F131]
-                                   transition-all duration-150 text-[11px]"
-                          >🔁</button>
-                          @if (budget().incomeSources.length > 1) {
-                            <button
-                              (click)="removeIncomeSource(source.id)"
-                              class="text-[#4A4A52] hover:text-[#FF7B7B] transition-colors text-xs
-                                     w-5 h-5 flex items-center justify-center flex-shrink-0"
-                            >✕</button>
-                          }
-                        </div>
-                      </div>
-                  }
-                </div>
-              </div>
-            }
-
-            <button
-              (click)="addIncomeSource()"
-              class="w-full py-2 rounded-xl border border-dashed border-[#232327]
-                     text-[#4A4A52] text-xs font-sans hover:border-[#C9F131] hover:text-[#C9F131]
-                     transition-all duration-150"
-            >
-              + Añadir ingreso puntual
-            </button>
-
           </div>
-        }
-      </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-display text-base font-light text-[#C9F131]">
+            {{ fmt(summary().totalIncome) }}
+          </span>
+          <svg class="w-3.5 h-3.5 text-[#4A4A52]" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+      </button>
 
       <!-- ─── Métricas resumen ───────────────────────────────────────────── -->
       <div class="bg-[#141416] border border-[#232327] rounded-2xl p-5 space-y-4">
@@ -537,6 +425,13 @@
     </main>
   </div>
   </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- MODAL — Gestión de ingresos                                              -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  @if (incomePanelOpen()) {
+    <app-income-modal (close)="closeIncomePanel()" />
+  }
 
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
   <!-- MODAL — Añadir concepto                                                 -->

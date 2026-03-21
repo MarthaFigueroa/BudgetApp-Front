@@ -195,19 +195,25 @@ export class BudgetService {
   /** Marca/desmarca un ingreso como recurrente (plantilla). */
   toggleRecurring(sourceId: string): void {
     const { month, year } = this.budget();
-    // Optimistic toggle
-    this.budget.update((b) => ({
-      ...b,
-      incomeSources: b.incomeSources.map((s) =>
-        s.id === sourceId ? { ...s, isFromTemplate: !s.isFromTemplate } : s,
-      ),
-    }));
+    // No optimistic update: we update the signal directly from the API response
+    // to avoid the flicker caused by the source briefly disappearing between sections.
     firstValueFrom(this.api.toggleRecurring(year, month, sourceId))
-      .then(() => this._refresh())
-      .catch((err) => {
-        console.error('[BudgetService] Error toggling recurrente:', err);
-        this._refresh(); // revert optimistic on error
-      });
+      .then((updated) => {
+        this.budget.update((b) => ({
+          ...b,
+          incomeSources: b.incomeSources.map((s) =>
+            s.id === sourceId
+              ? {
+                  ...s,
+                  isFromTemplate:     updated.isFromTemplate,
+                  templateItemId:     updated.templateItemId  ?? undefined,
+                  recurringFrequency: (updated.recurringFrequency as RecurringFrequency) ?? undefined,
+                }
+              : s,
+          ),
+        }));
+      })
+      .catch((err) => console.error('[BudgetService] Error toggling recurrente:', err));
   }
 
   // ─── Items ───────────────────────────────────────────────────────────────────
