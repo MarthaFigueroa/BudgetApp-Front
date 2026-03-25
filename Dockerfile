@@ -1,12 +1,20 @@
 # ── Stage 1: Build ──────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 
+# URL del backend — se inyecta desde Secret Manager vía Cloud Build.
+# Valor por defecto para desarrollo local.
+ARG API_URL=http://localhost:3001
+
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm ci
 
 COPY . .
+
+# Reemplaza la URL del backend en el servicio antes de compilar
+RUN sed -i "s|http://localhost:3001|${API_URL}|g" src/app/services/api.service.ts
+
 RUN npm run build -- --configuration production
 
 # ── Stage 2: Serve with Nginx ────────────────────────────────────────────────

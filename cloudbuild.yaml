@@ -1,21 +1,25 @@
 substitutions:
   _REGION: europe-west1
   _SERVICE: budget-front
-  _REPO: budget-app-front               # Artifact Registry repository name
+  _REPO: budget-app-front
 
 steps:
   # ── 1. Build Docker image ──────────────────────────────────────────────────
+  # BUDGET_BACK_URL se lee de Secret Manager y se pasa como build-arg para
+  # que Angular compile la URL del backend directamente en el bundle.
   - name: gcr.io/cloud-builders/docker
     id: build
+    secretEnv: [BUDGET_BACK_URL]
+    entrypoint: bash
     args:
-      - build
-      - --tag
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA
-      - --tag
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:latest
-      - --cache-from
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:latest
-      - .
+      - -c
+      - |
+        docker build \
+          --build-arg API_URL=$$BUDGET_BACK_URL \
+          --tag ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA \
+          --tag ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:latest \
+          --cache-from ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:latest \
+          .
 
   # ── 2. Push image to Artifact Registry ────────────────────────────────────
   - name: gcr.io/cloud-builders/docker
@@ -46,6 +50,11 @@ steps:
 images:
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:latest
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/BUDGET_BACK_URL/versions/latest
+      env: BUDGET_BACK_URL
 
 options:
   logging: CLOUD_LOGGING_ONLY
