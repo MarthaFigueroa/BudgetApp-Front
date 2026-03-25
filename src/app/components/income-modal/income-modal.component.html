@@ -48,11 +48,9 @@
       <!-- ── Sección: Recurrentes ──────────────────────────────────────── -->
       @if (recurringIncomeSources.length > 0) {
         <div>
-          <!-- Section label -->
           <div class="flex items-center gap-2 mb-3">
             <div class="w-5 h-5 rounded-md flex items-center justify-center
                         bg-[#C9F131]/10 border border-[#C9F131]/20">
-              <!-- Repeat icon -->
               <svg class="w-3 h-3 text-[#C9F131]" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2.5"
                    stroke-linecap="round" stroke-linejoin="round">
@@ -76,7 +74,7 @@
                           px-3 py-2.5 flex items-center gap-2.5
                           hover:border-[#2E2E33] transition-colors">
 
-                <!-- Name field with pencil icon on hover -->
+                <!-- ── Nombre con lápiz al hacer hover ──────────────────── -->
                 <div class="relative flex-1 min-w-0">
                   <input
                     type="text"
@@ -84,13 +82,10 @@
                     (focus)="onNameFocus(source.id)"
                     (blur)="onNameBlur(source.id, $event)"
                     class="w-full bg-transparent font-sans text-sm text-[#F4F3EE]
-                           focus:outline-none focus:text-[#F4F3EE] pr-5
-                           border-b border-transparent
+                           focus:outline-none pr-5 border-b border-transparent
                            transition-colors truncate"
-                    [class.border-b-C9F131]="editingId() === source.id"
                   />
-                  <!-- Pencil icon — visible on group hover when not editing -->
-                  @if (editingId() !== source.id) {
+                  @if (editingNameId() !== source.id) {
                     <div class="absolute right-0 top-1/2 -translate-y-1/2
                                 opacity-0 group-hover:opacity-100
                                 transition-opacity pointer-events-none">
@@ -101,19 +96,27 @@
                       </svg>
                     </div>
                   }
-                  <!-- Active editing indicator -->
-                  @if (editingId() === source.id) {
+                  @if (editingNameId() === source.id) {
                     <div class="absolute bottom-0 left-0 right-5 h-px bg-[#C9F131]"></div>
                   }
                 </div>
 
-                <!-- Amount input -->
+                <!-- ── Importe ─────────────────────────────────────────── -->
+                <!--
+                  [value] bound to amountDisplayFor():
+                    • While editing → tracks _editingAmountVal (what user types)
+                    • While not editing → shows source.amount from signal
+                  This prevents Angular's change-detection from resetting the
+                  input mid-keystroke and causing value concatenation.
+                -->
                 <div class="flex items-center gap-1 flex-shrink-0">
                   <span class="font-mono text-xs text-[#4A4A52]">€</span>
                   <input
                     type="number"
-                    [value]="source.amount || ''"
+                    [value]="amountDisplayFor(source)"
+                    (focus)="onAmountFocus(source.id, $event)"
                     (input)="onAmountInput(source.id, $event)"
+                    (blur)="onAmountBlur(source.id, $event)"
                     placeholder="0"
                     class="w-24 bg-[#141416] border border-[#232327] rounded-lg
                            px-2 py-1 text-right font-mono text-sm text-[#C9F131]
@@ -122,10 +125,10 @@
                   />
                 </div>
 
-                <!-- Toggle recurring: ACTIVE state (click to deactivate) -->
+                <!-- ── Toggle recurrente activo ────────────────────────── -->
                 <button
                   (click)="toggleRecurring(source.id)"
-                  title="Quitar de recurrentes (pasará a ingreso puntual)"
+                  title="Quitar de recurrentes"
                   class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0
                          bg-[#C9F131]/10 border border-[#C9F131]/30 text-[#C9F131]
                          hover:bg-[#FF7B7B]/10 hover:border-[#FF7B7B]/30 hover:text-[#FF7B7B]
@@ -141,20 +144,26 @@
                   </svg>
                 </button>
 
-                <!-- Delete -->
-                @if (budget().incomeSources.length > 1) {
-                  <button
-                    (click)="removeIncomeSource(source.id)"
-                    title="Eliminar ingreso"
-                    class="w-6 h-6 flex items-center justify-center flex-shrink-0
-                           text-[#2E2E33] hover:text-[#FF7B7B] transition-colors"
-                  >
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                  </button>
-                }
+                <!-- ── Eliminar ────────────────────────────────────────── -->
+                <!--
+                  Siempre visible. Cuando solo queda 1 fuente (canDelete=false),
+                  el botón queda disabled (opaco, sin interacción) pero sigue
+                  ocupando su espacio para no desplazar el layout.
+                -->
+                <button
+                  (click)="removeIncomeSource(source.id)"
+                  [disabled]="!canDelete"
+                  title="Eliminar ingreso"
+                  class="w-6 h-6 flex items-center justify-center flex-shrink-0
+                         text-[#4A4A52] hover:text-[#FF7B7B]
+                         disabled:opacity-20 disabled:cursor-not-allowed disabled:pointer-events-none
+                         transition-colors"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                       stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
               </div>
             }
           </div>
@@ -181,7 +190,7 @@
                           px-3 py-2.5 flex items-center gap-2.5
                           hover:border-[#2E2E33] transition-colors">
 
-                <!-- Name field with pencil icon on hover -->
+                <!-- ── Nombre con lápiz al hacer hover ──────────────────── -->
                 <div class="relative flex-1 min-w-0">
                   <input
                     type="text"
@@ -189,12 +198,10 @@
                     (focus)="onNameFocus(source.id)"
                     (blur)="onNameBlur(source.id, $event)"
                     class="w-full bg-transparent font-sans text-sm text-[#F4F3EE]
-                           focus:outline-none focus:text-[#F4F3EE] pr-5
-                           border-b border-transparent
+                           focus:outline-none pr-5 border-b border-transparent
                            transition-colors truncate"
                   />
-                  <!-- Pencil icon — visible on group hover when not editing -->
-                  @if (editingId() !== source.id) {
+                  @if (editingNameId() !== source.id) {
                     <div class="absolute right-0 top-1/2 -translate-y-1/2
                                 opacity-0 group-hover:opacity-100
                                 transition-opacity pointer-events-none">
@@ -205,19 +212,20 @@
                       </svg>
                     </div>
                   }
-                  <!-- Active editing indicator -->
-                  @if (editingId() === source.id) {
+                  @if (editingNameId() === source.id) {
                     <div class="absolute bottom-0 left-0 right-5 h-px bg-[#C9F131]"></div>
                   }
                 </div>
 
-                <!-- Amount input -->
+                <!-- ── Importe ─────────────────────────────────────────── -->
                 <div class="flex items-center gap-1 flex-shrink-0">
                   <span class="font-mono text-xs text-[#4A4A52]">€</span>
                   <input
                     type="number"
-                    [value]="source.amount || ''"
+                    [value]="amountDisplayFor(source)"
+                    (focus)="onAmountFocus(source.id, $event)"
                     (input)="onAmountInput(source.id, $event)"
+                    (blur)="onAmountBlur(source.id, $event)"
                     placeholder="0"
                     class="w-24 bg-[#141416] border border-[#232327] rounded-lg
                            px-2 py-1 text-right font-mono text-sm text-[#C9F131]
@@ -226,7 +234,7 @@
                   />
                 </div>
 
-                <!-- Toggle recurring: INACTIVE state (click to activate) -->
+                <!-- ── Toggle recurrente inactivo ──────────────────────── -->
                 <button
                   (click)="toggleRecurring(source.id)"
                   title="Marcar como recurrente (se heredará a futuros meses)"
@@ -245,20 +253,21 @@
                   </svg>
                 </button>
 
-                <!-- Delete -->
-                @if (budget().incomeSources.length > 1) {
-                  <button
-                    (click)="removeIncomeSource(source.id)"
-                    title="Eliminar ingreso"
-                    class="w-6 h-6 flex items-center justify-center flex-shrink-0
-                           text-[#2E2E33] hover:text-[#FF7B7B] transition-colors"
-                  >
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                  </button>
-                }
+                <!-- ── Eliminar ────────────────────────────────────────── -->
+                <button
+                  (click)="removeIncomeSource(source.id)"
+                  [disabled]="!canDelete"
+                  title="Eliminar ingreso"
+                  class="w-6 h-6 flex items-center justify-center flex-shrink-0
+                         text-[#4A4A52] hover:text-[#FF7B7B]
+                         disabled:opacity-20 disabled:cursor-not-allowed disabled:pointer-events-none
+                         transition-colors"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                       stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
               </div>
             }
           </div>
