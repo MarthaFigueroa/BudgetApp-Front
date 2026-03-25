@@ -1,7 +1,7 @@
 substitutions:
   _REGION: europe-west1
   _SERVICE: budget-front
-  _REPO: budget-app                  # Artifact Registry repository name
+  _REPO: budget-app-front               # Artifact Registry repository name
 
 steps:
   # ── 1. Build Docker image ──────────────────────────────────────────────────
